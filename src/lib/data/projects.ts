@@ -1,25 +1,28 @@
-export async function getProjects() {
-  return [] as any[]
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Project } from "@/types/database"
+
+export async function getProjects(): Promise<Project[]> {
+  return []
 }
 
-export async function getProjectBySlug(slug: string) {
-  return {} as any
+export async function getProjectBySlug(_slug: string): Promise<Project | null> {
+  return null
 }
 
-export async function getFeaturedProjects() {
-  return [] as any[]
+export async function getFeaturedProjects(): Promise<Project[]> {
+  return []
 }
 
-export async function createProject(data: any) {
-  return {} as any
+export async function createProject(_data: Partial<Project>): Promise<Project | null> {
+  return null
 }
 
-export async function updateProject(id: string, data: any) {
-  return {} as any
+export async function updateProject(_id: string, _data: Partial<Project>): Promise<Project | null> {
+  return null
 }
 
-export async function deleteProject(id: string) {
+export async function deleteProject(_id: string): Promise<void> {
 }
 
-export async function restoreProject(id: string) {
+export async function restoreProject(_id: string): Promise<void> {
 }

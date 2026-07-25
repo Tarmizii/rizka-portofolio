@@ -2,7 +2,13 @@
 
 import { motion } from "framer-motion"
 
-const techCategories = [
+import { Skill } from "@/types/database"
+
+interface TechStackProps {
+  skills?: Skill[]
+}
+
+const placeholderTechCategories = [
   {
     category: "Frontend",
     items: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Framer Motion"],
@@ -21,7 +27,24 @@ const techCategories = [
   },
 ]
 
-export default function TechStack() {
+export default function TechStack({ skills }: TechStackProps) {
+  let displayCategories = placeholderTechCategories
+  
+  if (skills && skills.length > 0) {
+    const grouped = skills.reduce((acc, skill) => {
+      const cat = skill.category || "Other"
+      if (!acc[cat]) {
+        acc[cat] = []
+      }
+      acc[cat].push(skill.name)
+      return acc
+    }, {} as Record<string, string[]>)
+
+    displayCategories = Object.entries(grouped).map(([category, items]) => ({
+      category,
+      items,
+    }))
+  }
   return (
     <section
       id="tech-stack"
@@ -44,7 +67,7 @@ export default function TechStack() {
 
         {/* Categories grid */}
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-          {techCategories.map((group, groupIndex) => (
+          {displayCategories.map((group, groupIndex) => (
             <motion.div
               key={group.category}
               className="space-y-5"

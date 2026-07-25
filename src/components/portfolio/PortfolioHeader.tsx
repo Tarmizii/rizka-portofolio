@@ -4,7 +4,9 @@ import { useState } from "react"
 import Link from "next/link"
 import FullscreenMenu from "./FullscreenMenu"
 
-export default function PortfolioHeader() {
+import { Profile } from "@/types/database"
+
+export default function PortfolioHeader({ profile }: { profile?: Profile | null }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -14,7 +16,7 @@ export default function PortfolioHeader() {
           {/* Social links - left */}
           <div className="flex items-center gap-2 text-xs font-medium tracking-wider text-[var(--muted)]">
             <a
-              href="https://github.com/rizkaauliaa"
+              href={profile?.github_url || "https://github.com"}
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors hover:text-[var(--foreground)]"

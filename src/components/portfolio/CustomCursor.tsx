@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { motion, useMotionValue, useSpring } from "framer-motion"
 
 export default function CustomCursor() {
@@ -11,14 +11,14 @@ export default function CustomCursor() {
   const cursorY = useMotionValue(0)
   const springX = useSpring(cursorX, { stiffness: 500, damping: 28 })
   const springY = useSpring(cursorY, { stiffness: 500, damping: 28 })
-  const isTouchDevice = useRef(false)
+  const [isTouch, setIsTouch] = useState(false)
 
   useEffect(() => {
     // Detect touch device
-    isTouchDevice.current =
-      "ontouchstart" in window || navigator.maxTouchPoints > 0
+    const touch = "ontouchstart" in window || navigator.maxTouchPoints > 0
+    const timer = setTimeout(() => setIsTouch(touch), 0)
 
-    if (isTouchDevice.current) return
+    if (touch) return
 
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX)
@@ -73,6 +73,7 @@ export default function CustomCursor() {
     document.head.appendChild(style)
 
     return () => {
+      clearTimeout(timer)
       window.removeEventListener("mousemove", handleMouseMove)
       window.removeEventListener("mouseover", handleElementHover)
       document.removeEventListener("mouseleave", handleMouseLeave)
@@ -83,7 +84,7 @@ export default function CustomCursor() {
     }
   }, [cursorX, cursorY, isVisible])
 
-  if (typeof window !== "undefined" && isTouchDevice.current) return null
+  if (typeof window !== "undefined" && isTouch) return null
 
   return (
     <motion.div

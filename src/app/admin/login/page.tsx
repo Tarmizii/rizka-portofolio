@@ -34,7 +34,7 @@ export default function AdminLogin() {
 
       router.push("/admin")
       router.refresh()
-    } catch (err) {
+    } catch {
       setError("Failed to login. Check your credentials.")
     } finally {
       setIsLoading(false)

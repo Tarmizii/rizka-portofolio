@@ -3,7 +3,9 @@
 import Link from "next/link"
 import { motion } from "framer-motion"
 
-export default function Hero() {
+import { Profile } from "@/types/database"
+
+export default function Hero({ profile }: { profile?: Profile | null }) {
   return (
     <section className="relative min-h-screen overflow-hidden bg-[var(--background)] px-6 pt-24 md:px-10">
       {/* Background letter R */}
@@ -67,7 +69,7 @@ export default function Hero() {
             VIEW WORK
           </Link>
           <Link
-            href="/resume"
+            href={profile?.resume_url || "/resume"}
             className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--border)] px-8 text-sm font-medium tracking-wider text-[var(--foreground)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent)]"
           >
             DOWNLOAD CV

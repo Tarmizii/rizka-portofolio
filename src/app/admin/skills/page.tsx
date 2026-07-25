@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,11 +26,7 @@ export default function AdminSkills() {
 
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchSkills()
-  }, [])
-
-  async function fetchSkills() {
+  const fetchSkills = useCallback(async () => {
     setIsLoading(true)
     const { data, error } = await supabase
       .from("skills")
@@ -44,7 +40,14 @@ export default function AdminSkills() {
       setSkills(data as Skill[])
     }
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchSkills()
+    }
+    load()
+  }, [fetchSkills])
 
   const handleCreate = () => {
     setEditingSkill(null)

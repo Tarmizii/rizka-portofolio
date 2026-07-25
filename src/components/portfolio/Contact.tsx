@@ -2,7 +2,11 @@
 
 import { motion } from "framer-motion"
 
-export default function Contact() {
+import { Profile } from "@/types/database"
+
+export default function Contact({ profile }: { profile?: Profile | null }) {
+  const email = profile?.email || "rizkaauliaa198@gmail.com"
+
   return (
     <section id="contact" className="relative overflow-hidden py-28 md:py-36">
       {/* Background letter */}
@@ -42,10 +46,10 @@ export default function Contact() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <a
-              href="mailto:rizkaauliaa198@gmail.com"
+              href={`mailto:${email}`}
               className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--foreground)] px-8 text-sm font-medium tracking-wider text-[var(--background)] transition-all hover:bg-[var(--accent)] hover:text-white"
             >
-              rizkaauliaa198@gmail.com
+              {email}
             </a>
             <a
               href="tel:+6281370617604"

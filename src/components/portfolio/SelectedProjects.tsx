@@ -3,27 +3,20 @@
 import { motion } from "framer-motion"
 import { ProjectCard } from "./ProjectCard"
 
-interface Project {
-  id: string
-  title: string
-  category: string
-  year: number
-  coverUrl: string
-  slug: string
-}
+import { Project } from "@/types/database"
 
 interface SelectedProjectsProps {
   projects?: Project[]
 }
 
 // Placeholder projects for development
-const placeholderProjects: Project[] = [
+const placeholderProjects: Partial<Project>[] = [
   {
     id: "1",
     title: "Tailor Management System",
     category: "Web Application",
     year: 2025,
-    coverUrl: "",
+    cover_url: "",
     slug: "tailor-management-system",
   },
   {
@@ -31,7 +24,7 @@ const placeholderProjects: Project[] = [
     title: "E-Commerce Platform",
     category: "Full-Stack",
     year: 2025,
-    coverUrl: "",
+    cover_url: "",
     slug: "e-commerce-platform",
   },
   {
@@ -39,7 +32,7 @@ const placeholderProjects: Project[] = [
     title: "Portfolio CMS",
     category: "Web Development",
     year: 2024,
-    coverUrl: "",
+    cover_url: "",
     slug: "portfolio-cms",
   },
 ]
@@ -85,7 +78,14 @@ export default function SelectedProjects({
                   ease: [0.76, 0, 0.24, 1],
                 }}
               >
-                <ProjectCard {...project} />
+                <ProjectCard 
+                  id={project.id!} 
+                  title={project.title!} 
+                  category={project.category!} 
+                  year={project.year!} 
+                  slug={project.slug!} 
+                  coverUrl={project.cover_url || ""} 
+                />
               </motion.div>
             ))}
           </div>

@@ -1,15 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import AdminSidebar from "@/components/admin/AdminSidebar"
 import AdminHeader from "@/components/admin/AdminHeader"
 import { Project } from "@/types/database"
+import ProjectModal from "@/components/admin/ProjectModal"
 
 interface ProjectFormValues {
   title: string
@@ -21,8 +19,8 @@ interface ProjectFormValues {
   role: string
   github_url: string
   live_url: string
-  tech_stack: string
-  features: string
+  tech_stack: string[]
+  features: string[]
   featured: boolean
   status: "draft" | "published"
   sort_order: number
@@ -36,11 +34,7 @@ export default function AdminProjects() {
 
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  async function fetchProjects() {
+  const fetchProjects = useCallback(async () => {
     setIsLoading(true)
     const { data, error } = await supabase
       .from("projects")
@@ -54,7 +48,14 @@ export default function AdminProjects() {
       setProjects(data as Project[])
     }
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchProjects()
+    }
+    load()
+  }, [fetchProjects])
 
   const handleCreate = () => {
     setEditingProject(null)
@@ -91,9 +92,67 @@ export default function AdminProjects() {
     }
   }
 
-  const handleSave = async (formData: ProjectFormValues) => {
-    const techStack = formData.tech_stack.split(",").map(t => t.trim()).filter(t => t)
-    const features = formData.features.split(",").map(f => f.trim()).filter(f => f)
+  const handleDuplicate = async (project: Project) => {
+    const { error } = await supabase.from("projects").insert({
+        title: `${project.title} (Copy)`,
+        slug: `${project.slug}-copy`,
+        subtitle: project.subtitle,
+        description: project.description,
+        category: project.category,
+        year: project.year,
+        role: project.role,
+        cover_url: project.cover_url,
+        github_url: project.github_url,
+        live_url: project.live_url,
+        tech_stack: project.tech_stack,
+        features: project.features,
+        featured: false,
+        status: "draft",
+        sort_order: null,
+      })
+
+    if (error) {
+      toast.error("Failed to duplicate project")
+    } else {
+      toast.success("Project duplicated successfully")
+      fetchProjects()
+    }
+  }
+
+  const handleSave = async (formData: ProjectFormValues, coverFile?: File | null, galleryFiles?: File[] | null) => {
+    const galleryUrls: string[] = []
+
+    // Upload cover image
+    if (coverFile) {
+      const ext = coverFile.name.split(".").pop()
+      const path = `projects/${formData.slug || Date.now()}/cover.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from("portfolio-assets")
+        .upload(path, coverFile, { upsert: true })
+      if (uploadError) {
+        toast.error("Failed to upload cover image")
+        return
+      }
+      void (await supabase.storage.from("portfolio-assets").getPublicUrl(path))
+      // Public URL available if needed in future
+    }
+
+    // Upload gallery images
+    if (galleryFiles && galleryFiles.length > 0) {
+      for (const file of galleryFiles) {
+        const ext = file.name.split(".").pop()
+        const path = `projects/${formData.slug || Date.now()}/${Date.now()}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from("portfolio-assets")
+          .upload(path, file, { upsert: true })
+        if (uploadError) {
+          toast.error(`Failed to upload image: ${file.name}`)
+          continue
+        }
+        const { data: { publicUrl } } = supabase.storage.from("portfolio-assets").getPublicUrl(path)
+        galleryUrls.push(publicUrl)
+      }
+    }
 
     const data = {
       title: formData.title,
@@ -105,8 +164,8 @@ export default function AdminProjects() {
       role: formData.role || null,
       github_url: formData.github_url,
       live_url: formData.live_url || null,
-      tech_stack: techStack,
-      features: features,
+      tech_stack: formData.tech_stack,
+      features: formData.features,
       featured: formData.featured,
       status: formData.status,
       sort_order: formData.sort_order,
@@ -121,6 +180,21 @@ export default function AdminProjects() {
     } else {
       toast.success(editingProject ? "Project updated successfully" : "Project created successfully")
       setIsModalOpen(false)
+
+      // Upload gallery images after project is created
+      if (galleryUrls.length > 0) {
+        const newProjectId = editingProject ? editingProject.id : (await supabase.from("projects").select("id").eq("title", formData.title).single()).data?.id
+        if (newProjectId) {
+          for (const imageUrl of galleryUrls) {
+            await supabase.from("project_images").insert({
+              project_id: newProjectId,
+              image_url: imageUrl,
+              sort_order: galleryUrls.indexOf(imageUrl),
+            })
+          }
+        }
+      }
+
       fetchProjects()
     }
   }
@@ -172,6 +246,7 @@ export default function AdminProjects() {
                         <Button variant="ghost" size="sm" onClick={() => handlePublish(project.id, project.status)}>
                           {project.status === "draft" ? "Publish" : "Unpublish"}
                         </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDuplicate(project)}>Duplicate</Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(project.id)}>Delete</Button>
                       </td>
                     </tr>
@@ -180,7 +255,7 @@ export default function AdminProjects() {
               </table>
               {projects.length === 0 && (
                 <div className="p-8 text-center text-muted-foreground">
-                  No projects yet. Click "Add Project" to get started.
+                  No projects yet. Click &quot;Add Project&quot; to get started.
                 </div>
               )}
             </div>
@@ -188,135 +263,12 @@ export default function AdminProjects() {
         </main>
       </div>
 
-      <ProjectForm
+      <ProjectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         initialData={editingProject}
         onSave={handleSave}
       />
     </div>
-  )
-}
-
-function ProjectForm({ isOpen, onClose, initialData, onSave }: { 
-  isOpen: boolean
-  onClose: () => void
-  initialData: Project | null
-  onSave: (data: ProjectFormValues) => void
-}) {
-  const [formData, setFormData] = useState<ProjectFormValues>({
-    title: initialData?.title || "",
-    slug: initialData?.slug || "",
-    subtitle: initialData?.subtitle || "",
-    description: initialData?.description || "",
-    category: initialData?.category || "",
-    year: initialData?.year || new Date().getFullYear(),
-    role: initialData?.role || "",
-    github_url: initialData?.github_url || "",
-    live_url: initialData?.live_url || "",
-    tech_stack: (initialData?.tech_stack || []).join(", "),
-    features: (initialData?.features || []).join(", "),
-    featured: initialData?.featured || false,
-    status: initialData?.status || "draft",
-    sort_order: initialData?.sort_order || 0,
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData)
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl max-h-[85vh] p-6">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-foreground">{initialData ? "Edit Project" : "Add New Project"}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Project Title</Label>
-              <Input id="title" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
-              <Input id="slug" value={formData.slug} onChange={(e) => setFormData({...formData, slug: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="subtitle">Subtitle</Label>
-              <Input id="subtitle" value={formData.subtitle} onChange={(e) => setFormData({...formData, subtitle: e.target.value})} className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Input id="category" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <textarea id="description" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="flex min-h-[80px] w-full rounded-md border border-[#2e2e38] bg-[#18181c] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
-              <Input id="year" type="number" value={formData.year} onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})} required className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Input id="role" value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="github_url">GitHub URL</Label>
-              <Input id="github_url" value={formData.github_url} onChange={(e) => setFormData({...formData, github_url: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="live_url">Live Demo URL</Label>
-              <Input id="live_url" value={formData.live_url} onChange={(e) => setFormData({...formData, live_url: e.target.value})} className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tech_stack">Tech Stack (comma-separated)</Label>
-            <Input id="tech_stack" value={formData.tech_stack} onChange={(e) => setFormData({...formData, tech_stack: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="features">Features (comma-separated)</Label>
-            <Input id="features" value={formData.features} onChange={(e) => setFormData({...formData, features: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <select id="status" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value as "draft" | "published"})} className="flex h-10 w-full rounded-md border border-[#2e2e38] bg-[#18181c] px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none">
-                <option value="draft" className="bg-[#18181c]">Draft</option>
-                <option value="published" className="bg-[#18181c]">Published</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="sort_order">Sort Order</Label>
-              <Input id="sort_order" type="number" value={formData.sort_order} onChange={(e) => setFormData({...formData, sort_order: parseInt(e.target.value)})} className="bg-[#18181c] border-[#2e2e38]" />
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 pt-1">
-            <input id="featured" type="checkbox" checked={formData.featured} onChange={(e) => setFormData({...formData, featured: e.target.checked})} className="h-4 w-4 rounded border-[#2e2e38] bg-[#18181c] accent-orange-500" />
-            <Label htmlFor="featured" className="cursor-pointer">Featured Project</Label>
-          </div>
-
-          <DialogFooter className="pt-4 border-t border-[#2a2a32]">
-            <Button type="button" variant="outline" onClick={onClose} className="border-[#2e2e38] hover:bg-[#1f1f24]">Cancel</Button>
-            <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">{initialData ? "Update Project" : "Create Project"}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
   )
 }

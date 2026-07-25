@@ -16,7 +16,15 @@ import Footer from "@/components/portfolio/Footer"
 import CustomCursor from "@/components/portfolio/CustomCursor"
 import { LenisProvider } from "@/components/portfolio/LenisProvider"
 
-export default function PortfolioPage() {
+import { Project, Skill, Profile } from "@/types/database"
+
+interface PortfolioLayoutProps {
+  profile?: Profile | null
+  projects: Project[]
+  skills: Skill[]
+}
+
+export default function PortfolioLayout({ profile, projects, skills }: PortfolioLayoutProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   const handleLoadComplete = useCallback(() => {
@@ -33,18 +41,18 @@ export default function PortfolioPage() {
             isLoading ? "opacity-0" : "opacity-100"
           } transition-opacity duration-500`}
         >
-          <PortfolioHeader />
+          <PortfolioHeader profile={profile} />
           <SideElements />
 
           <main>
-            <Hero />
+            <Hero profile={profile} />
             <DiagonalMarquee />
-            <About />
+            <About profile={profile} />
             <Capabilities />
-            <SelectedProjects />
-            <TechStack />
-            <Education />
-            <Contact />
+            <SelectedProjects projects={projects} />
+            <TechStack skills={skills} />
+            <Education profile={profile} />
+            <Contact profile={profile} />
           </main>
 
           <Footer />

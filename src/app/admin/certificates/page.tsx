@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
 import AdminSidebar from "@/components/admin/AdminSidebar"
 import AdminHeader from "@/components/admin/AdminHeader"
+import { FileUpload } from "@/components/admin/FileUpload"
 import { Certificate } from "@/types/database"
 
 interface CertificateFormValues {
@@ -28,11 +29,7 @@ export default function AdminCertificates() {
 
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchCertificates()
-  }, [])
-
-  async function fetchCertificates() {
+  const fetchCertificates = useCallback(async () => {
     setIsLoading(true)
     const { data, error } = await supabase
       .from("certificates")
@@ -46,7 +43,14 @@ export default function AdminCertificates() {
       setCertificates(data as Certificate[])
     }
     setIsLoading(false)
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchCertificates()
+    }
+    load()
+  }, [fetchCertificates])
 
   const handleCreate = () => {
     setEditingCert(null)
@@ -72,11 +76,38 @@ export default function AdminCertificates() {
     else { toast.success(`Certificate ${newStatus === "draft" ? "unpublished" : "published"}`); fetchCertificates() }
   }
 
-  const handleSave = async (formData: CertificateFormValues) => {
+  const handleSave = async (formData: CertificateFormValues, coverFile?: File | null, pdfFile?: File | null) => {
+    let cover_url = editingCert?.cover_url || ""
+    let pdf_url = editingCert?.pdf_url || ""
+
+    if (coverFile) {
+      const ext = coverFile.name.split(".").pop()
+      const path = `covers/${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from("portfolio-assets")
+        .upload(path, coverFile, { upsert: true })
+      if (uploadError) { toast.error("Failed to upload cover image"); return }
+      const { data: { publicUrl } } = supabase.storage.from("portfolio-assets").getPublicUrl(path)
+      cover_url = publicUrl
+    }
+
+    if (pdfFile) {
+      const ext = pdfFile.name.split(".").pop()
+      const path = `pdfs/${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from("portfolio-assets")
+        .upload(path, pdfFile, { upsert: true })
+      if (uploadError) { toast.error("Failed to upload PDF"); return }
+      const { data: { publicUrl } } = supabase.storage.from("portfolio-assets").getPublicUrl(path)
+      pdf_url = publicUrl
+    }
+
     const data = {
       title: formData.title,
       issuer: formData.issuer || null,
       year: formData.year,
+      cover_url,
+      pdf_url,
       featured: formData.featured,
       status: formData.status,
       sort_order: formData.sort_order,
@@ -150,7 +181,7 @@ export default function AdminCertificates() {
   )
 }
 
-function CertForm({ isOpen, onClose, initialData, onSave }: { isOpen: boolean; onClose: () => void; initialData: Certificate | null; onSave: (data: CertificateFormValues) => void }) {
+function CertForm({ isOpen, onClose, initialData, onSave }: { isOpen: boolean; onClose: () => void; initialData: Certificate | null; onSave: (data: CertificateFormValues, coverFile?: File | null, pdfFile?: File | null) => void }) {
   const [form, setForm] = useState<CertificateFormValues>({
     title: initialData?.title || "",
     issuer: initialData?.issuer || "",
@@ -159,15 +190,17 @@ function CertForm({ isOpen, onClose, initialData, onSave }: { isOpen: boolean; o
     status: initialData?.status || "draft",
     sort_order: initialData?.sort_order || 0,
   })
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(form)
+    await onSave(form, coverFile, pdfFile)
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-6">
+      <DialogContent className="sm:max-w-lg p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-foreground">{initialData ? "Edit Certificate" : "Add Certificate"}</DialogTitle>
         </DialogHeader>
@@ -186,6 +219,8 @@ function CertForm({ isOpen, onClose, initialData, onSave }: { isOpen: boolean; o
               <Input type="number" value={form.year} onChange={(e) => setForm({...form, year: parseInt(e.target.value)})} required className="bg-[#18181c] border-[#2e2e38]" />
             </div>
           </div>
+          <FileUpload label="Cover Image" file={coverFile} onFileChange={setCoverFile} accept="image/*" />
+          <FileUpload label="PDF Certificate" file={pdfFile} onFileChange={setPdfFile} accept=".pdf,application/pdf" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
             <div className="space-y-2">
               <Label>Status</Label>

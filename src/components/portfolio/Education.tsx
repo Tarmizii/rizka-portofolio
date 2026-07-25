@@ -2,7 +2,13 @@
 
 import { motion } from "framer-motion"
 
-export default function Education() {
+import { Profile } from "@/types/database"
+
+export default function Education({ profile }: { profile?: Profile | null }) {
+  const institution = profile?.institution || "Politeknik Negeri Lhokseumawe"
+  const program = profile?.study_program || "Information Technology and Computer"
+  const year = profile?.graduation_year || 2025
+
   return (
     <section
       id="education"
@@ -34,18 +40,18 @@ export default function Education() {
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
             <span className="text-xs font-medium tracking-widest text-[var(--muted)]">
-              2025
+              {year}
             </span>
           </div>
 
           {/* Institution */}
           <h3 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">
-            Politeknik Negeri Lhokseumawe
+            {institution}
           </h3>
 
           {/* Department */}
           <p className="mb-2 text-base font-medium text-[var(--foreground)]">
-            Information Technology and Computer
+            {program}
           </p>
 
           {/* Description */}

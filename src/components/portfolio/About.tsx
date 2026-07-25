@@ -4,9 +4,14 @@ import { motion } from "framer-motion"
 import { useInView } from "framer-motion"
 import { useRef } from "react"
 
-export default function About() {
+import { Profile } from "@/types/database"
+
+export default function About({ profile }: { profile?: Profile | null }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
+
+  const title = profile?.professional_title || "FULL-STACK WEB DEVELOPER"
+  const bio = profile?.bio || "PASSIONATE ABOUT BUILDING WEB PRODUCTS FROM INTERFACE THROUGH DATA AND BACKEND LOGIC. WITH A STRONG FOUNDATION IN MODERN WEB TECHNOLOGIES LIKE NEXT.JS, TYPESCRIPT, PHP & POSTGRESQL, I CREATE SCALABLE, USER-CENTRIC APPLICATIONS THAT DELIVER EXCEPTIONAL DIGITAL EXPERIENCES."
 
   return (
     <section id="about" className="relative overflow-hidden py-28 md:py-36">
@@ -28,12 +33,12 @@ export default function About() {
         <div ref={ref} className="ml-auto max-w-4xl lg:ml-[30%]">
           {/* Headline */}
           <motion.h3
-            className="mb-10 text-2xl font-bold tracking-wide md:text-3xl"
+            className="mb-10 text-2xl font-bold uppercase tracking-wide md:text-3xl"
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
           >
-            I AM A FULL-STACK WEB DEVELOPER.
+            I AM A {title}.
           </motion.h3>
 
           {/* Body */}
@@ -47,11 +52,7 @@ export default function About() {
               ease: [0.76, 0, 0.24, 1],
             }}
           >
-            PASSIONATE ABOUT BUILDING WEB PRODUCTS FROM INTERFACE THROUGH DATA
-            AND BACKEND LOGIC. WITH A STRONG FOUNDATION IN MODERN WEB
-            TECHNOLOGIES LIKE NEXT.JS, TYPESCRIPT, PHP &amp; POSTGRESQL, I CREATE
-            SCALABLE, USER-CENTRIC APPLICATIONS THAT DELIVER EXCEPTIONAL DIGITAL
-            EXPERIENCES.{" "}
+            {bio}{" "}
             <span className="inline-block" role="img" aria-label="wave">
               👋
             </span>

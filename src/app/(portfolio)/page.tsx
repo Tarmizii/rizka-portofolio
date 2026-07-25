@@ -1,56 +1,35 @@
-"use client"
+import { createClient } from "@/lib/supabase/server"
+import PortfolioLayout from "@/components/portfolio/PortfolioLayout"
+import { Project, Skill, Profile } from "@/types/database"
 
-import { useState, useCallback } from "react"
-import PortfolioLoader from "@/components/portfolio/PortfolioLoader"
-import PortfolioHeader from "@/components/portfolio/PortfolioHeader"
-import SideElements from "@/components/portfolio/SideElements"
-import Hero from "@/components/portfolio/Hero"
-import DiagonalMarquee from "@/components/portfolio/DiagonalMarquee"
-import About from "@/components/portfolio/About"
-import Capabilities from "@/components/portfolio/Capabilities"
-import SelectedProjects from "@/components/portfolio/SelectedProjects"
-import TechStack from "@/components/portfolio/TechStack"
-import Education from "@/components/portfolio/Education"
-import Contact from "@/components/portfolio/Contact"
-import Footer from "@/components/portfolio/Footer"
-import CustomCursor from "@/components/portfolio/CustomCursor"
-import { LenisProvider } from "@/components/portfolio/LenisProvider"
+export default async function PortfolioPage() {
+  const supabase = await createClient()
 
-export default function PortfolioPage() {
-  const [isLoading, setIsLoading] = useState(true)
+  // Fetch profile
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .single()
 
-  const handleLoadComplete = useCallback(() => {
-    setIsLoading(false)
-  }, [])
+  // Fetch published and featured projects
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("status", "published")
+    .order("sort_order", { ascending: true })
+
+  // Fetch visible skills
+  const { data: skills } = await supabase
+    .from("skills")
+    .select("*")
+    .eq("visible", true)
+    .order("sort_order", { ascending: true })
 
   return (
-    <>
-      {isLoading && <PortfolioLoader onComplete={handleLoadComplete} />}
-
-      <LenisProvider>
-        <div
-          className={`min-h-screen bg-[var(--background)] text-[var(--foreground)] ${
-            isLoading ? "opacity-0" : "opacity-100"
-          } transition-opacity duration-500`}
-        >
-          <PortfolioHeader />
-          <SideElements />
-
-          <main>
-            <Hero />
-            <DiagonalMarquee />
-            <About />
-            <Capabilities />
-            <SelectedProjects />
-            <TechStack />
-            <Education />
-            <Contact />
-          </main>
-
-          <Footer />
-          <CustomCursor />
-        </div>
-      </LenisProvider>
-    </>
+    <PortfolioLayout 
+      profile={profile as Profile | null}
+      projects={projects as Project[] || []} 
+      skills={skills as Skill[] || []} 
+    />
   )
 }

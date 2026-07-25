@@ -23,6 +23,7 @@ export function ProjectCard({
       {/* Image container */}
       <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-[var(--secondary)]">
         {coverUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={coverUrl}
             alt={title}
