@@ -147,30 +147,32 @@ function SkillForm({ isOpen, onClose, initialData, onSave }: { isOpen: boolean; 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md p-6">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Skill" : "Add Skill"}</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-foreground">{initialData ? "Edit Skill" : "Add Skill"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label>Name</Label>
-            <Input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} required />
+            <Label>Skill Name</Label>
+            <Input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
           </div>
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Input value={form.category} onChange={(e) => setForm({...form, category: e.target.value})} required />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Input value={form.category} onChange={(e) => setForm({...form, category: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
+            </div>
+            <div className="space-y-2">
+              <Label>Sort Order</Label>
+              <Input type="number" value={form.sort_order} onChange={(e) => setForm({...form, sort_order: parseInt(e.target.value)})} className="bg-[#18181c] border-[#2e2e38]" />
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <input type="checkbox" checked={form.visible} onChange={(e) => setForm({...form, visible: e.target.checked})} />
-            <Label>Visible</Label>
+          <div className="flex items-center space-x-2 pt-1">
+            <input type="checkbox" id="skill-visible" checked={form.visible} onChange={(e) => setForm({...form, visible: e.target.checked})} className="h-4 w-4 rounded border-[#2e2e38] bg-[#18181c] accent-orange-500" />
+            <Label htmlFor="skill-visible" className="cursor-pointer">Visible</Label>
           </div>
-          <div className="space-y-2">
-            <Label>Sort Order</Label>
-            <Input type="number" value={form.sort_order} onChange={(e) => setForm({...form, sort_order: parseInt(e.target.value)})} />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">{initialData ? "Update" : "Create"}</Button>
+          <DialogFooter className="pt-4 border-t border-[#2a2a32]">
+            <Button type="button" variant="outline" onClick={onClose} className="border-[#2e2e38] hover:bg-[#1f1f24]">Cancel</Button>
+            <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">{initialData ? "Update" : "Create"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

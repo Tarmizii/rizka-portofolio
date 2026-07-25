@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request,
   })
@@ -68,7 +68,7 @@ export async function middleware(request: NextRequest) {
     }
   } catch (error) {
     // If Supabase fails, allow the request through rather than blocking all routes
-    console.error("Middleware auth error:", error)
+    console.error("Proxy auth error:", error)
   }
 
   return response

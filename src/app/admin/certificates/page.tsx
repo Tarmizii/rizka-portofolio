@@ -167,41 +167,45 @@ function CertForm({ isOpen, onClose, initialData, onSave }: { isOpen: boolean; o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md p-6">
         <DialogHeader>
-          <DialogTitle>{initialData ? "Edit Certificate" : "Add Certificate"}</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-foreground">{initialData ? "Edit Certificate" : "Add Certificate"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
             <Label>Title</Label>
-            <Input value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required />
+            <Input value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} required className="bg-[#18181c] border-[#2e2e38]" />
           </div>
-          <div className="space-y-2">
-            <Label>Issuer</Label>
-            <Input value={form.issuer} onChange={(e) => setForm({...form, issuer: e.target.value})} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Issuer</Label>
+              <Input value={form.issuer} onChange={(e) => setForm({...form, issuer: e.target.value})} className="bg-[#18181c] border-[#2e2e38]" />
+            </div>
+            <div className="space-y-2">
+              <Label>Year</Label>
+              <Input type="number" value={form.year} onChange={(e) => setForm({...form, year: parseInt(e.target.value)})} required className="bg-[#18181c] border-[#2e2e38]" />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Year</Label>
-            <Input type="number" value={form.year} onChange={(e) => setForm({...form, year: parseInt(e.target.value)})} required />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <select value={form.status} onChange={(e) => setForm({...form, status: e.target.value as "draft" | "published"})} className="flex h-10 w-full rounded-md border border-[#2e2e38] bg-[#18181c] px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none">
+                <option value="draft" className="bg-[#18181c]">Draft</option>
+                <option value="published" className="bg-[#18181c]">Published</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sort Order</Label>
+              <Input type="number" value={form.sort_order} onChange={(e) => setForm({...form, sort_order: parseInt(e.target.value)})} className="bg-[#18181c] border-[#2e2e38]" />
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <input type="checkbox" checked={form.featured} onChange={(e) => setForm({...form, featured: e.target.checked})} />
-            <Label>Featured</Label>
+          <div className="flex items-center space-x-2 pt-1">
+            <input type="checkbox" id="cert-featured" checked={form.featured} onChange={(e) => setForm({...form, featured: e.target.checked})} className="h-4 w-4 rounded border-[#2e2e38] bg-[#18181c] accent-orange-500" />
+            <Label htmlFor="cert-featured" className="cursor-pointer">Featured</Label>
           </div>
-          <div className="space-y-2">
-            <Label>Status</Label>
-            <select value={form.status} onChange={(e) => setForm({...form, status: e.target.value as "draft" | "published"})} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label>Sort Order</Label>
-            <Input type="number" value={form.sort_order} onChange={(e) => setForm({...form, sort_order: parseInt(e.target.value)})} />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">{initialData ? "Update" : "Create"}</Button>
+          <DialogFooter className="pt-4 border-t border-[#2a2a32]">
+            <Button type="button" variant="outline" onClick={onClose} className="border-[#2e2e38] hover:bg-[#1f1f24]">Cancel</Button>
+            <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">{initialData ? "Update" : "Create"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
