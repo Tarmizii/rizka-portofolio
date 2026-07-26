@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { LogInIcon } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -77,6 +79,11 @@ export default function AdminLogin() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <Spinner data-icon="inline-start" />
+              ) : (
+                <LogInIcon data-icon="inline-start" />
+              )}
               {isLoading ? "Logging in..." : "Login"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">

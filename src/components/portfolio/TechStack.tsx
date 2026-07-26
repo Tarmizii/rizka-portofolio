@@ -88,7 +88,7 @@ export default function TechStack({ skills }: TechStackProps) {
                 {group.items.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium tracking-wide text-[var(--muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--foreground)]"
+                    className="rounded-full border border-[var(--border)] px-4 py-2 text-xs font-medium tracking-wide text-[var(--muted-foreground)] transition-colors hover:border-[var(--accent)] hover:text-[var(--foreground)]"
                   >
                     {item}
                   </span>

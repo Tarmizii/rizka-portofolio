@@ -1,6 +1,6 @@
 -- Storage bucket for portfolio assets
 insert into storage.buckets (id, name, public)
-values ('portfolio-assets', 'portfolio-assets', false)
+values ('portfolio-assets', 'portfolio-assets', true)
 on conflict (id) do nothing;
 
 -- Storage policies for portfolio assets (check if exists before creating)

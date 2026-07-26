@@ -59,17 +59,13 @@ export default function Capabilities() {
               <h3 className="text-2xl font-bold tracking-tight md:text-3xl">
                 {cap.title}
               </h3>
-              <p className="text-sm leading-relaxed text-[var(--muted)]">
+              <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
                 {cap.description}
               </p>
               <a
                 href="#contact"
                 className="group inline-flex items-center gap-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:text-[var(--accent)]"
               >
-                Know More
-                <span className="inline-block text-[var(--accent)] transition-transform group-hover:translate-x-1">
-                  →
-                </span>
               </a>
             </motion.div>
           ))}

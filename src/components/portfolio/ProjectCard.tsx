@@ -50,12 +50,12 @@ export function ProjectCard({
         <h3 className="text-lg font-semibold transition-colors group-hover:text-[var(--accent)]">
           {title}
         </h3>
-        <div className="flex items-center gap-2 text-sm text-[var(--muted)]">
+        <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
           <span>{category}</span>
           {year && (
             <>
-              <span className="text-[var(--border)]">·</span>
+              <span className="text-[var(--muted-foreground)]">·</span>
               <span>{year}</span>
             </>
           )}

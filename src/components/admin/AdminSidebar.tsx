@@ -1,90 +1,182 @@
 "use client"
 
-import { useState } from "react"
-import LogoutButton from "@/components/admin/LogoutButton"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { ExternalLinkIcon, XIcon } from "lucide-react"
 
-export default function AdminSidebar() {
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
+import LogoutButton from "@/components/admin/LogoutButton"
+import { adminNav, isNavItemActive } from "@/components/admin/admin-nav"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+type AdminUser = {
+  name: string | null
+  email: string | null
+}
+
+type AdminSidebarProps = {
+  user: AdminUser
+  isMobileOpen: boolean
+  onCloseMobile: () => void
+}
+
+function getInitials(name: string | null, email: string | null) {
+  const source = name?.trim() || email?.trim() || "Admin"
+  const parts = source.split(/[\s@._-]+/).filter(Boolean)
+  return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? "").join("") || "A"
+}
+
+function SidebarBrand() {
+  return (
+    <Link
+      href="/admin"
+      className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-hover"
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-base font-bold text-accent-foreground">
+        R
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-semibold text-foreground">Portfolio CMS</span>
+        <span className="block truncate text-xs text-muted-foreground">Manage your content</span>
+      </span>
+    </Link>
+  )
+}
+
+function SidebarNav({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  return (
+    <nav className="space-y-6" aria-label="Admin sections">
+      {adminNav.map((section) => (
+        <div key={section.title}>
+          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {section.title}
+          </p>
+          <ul className="space-y-1">
+            {section.items.map((item) => {
+              const isActive = isNavItemActive(item, pathname)
+              const Icon = item.icon
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={isActive ? "page" : undefined}
+                    title={item.description}
+                    className={cn(
+                      "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      isActive
+                        ? "bg-accent/10 font-semibold text-accent"
+                        : "font-medium text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+                    )}
+                  >
+                    {isActive && (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-accent"
+                      />
+                    )}
+                    <Icon aria-hidden className="size-4.5 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  )
+}
+
+function SidebarFooter({ user }: { user: AdminUser }) {
+  return (
+    <div className="space-y-3 border-t border-border pt-4">
+      <Link
+        href="/"
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+      >
+        <ExternalLinkIcon aria-hidden className="size-4 shrink-0" />
+        View live site
+      </Link>
+
+      <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+          {getInitials(user.name, user.email)}
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-medium text-foreground">
+            {user.name || "Admin"}
+          </span>
+          {user.email && (
+            <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
+          )}
+        </span>
+      </div>
+
+      <LogoutButton />
+    </div>
+  )
+}
+
+export default function AdminSidebar({ user, isMobileOpen, onCloseMobile }: AdminSidebarProps) {
+  const pathname = usePathname()
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FF6A13] text-white shadow-lg md:hidden"
-        onClick={() => setIsMobileOpen(true)}
-        aria-label="Open menu"
-      >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+      {/* Desktop sidebar */}
+      <aside className="sticky top-0 hidden h-screen w-[272px] shrink-0 flex-col border-r border-border bg-surface md:flex">
+        <div className="p-4">
+          <SidebarBrand />
+        </div>
+        <div className="flex-1 overflow-y-auto px-3 pb-4">
+          <SidebarNav pathname={pathname} />
+        </div>
+        <div className="px-3 pb-4">
+          <SidebarFooter user={user} />
+        </div>
+      </aside>
 
-      {/* Mobile Drawer */}
+      {/* Mobile drawer */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsMobileOpen(false)}
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={onCloseMobile}
+            className="absolute inset-0 h-full w-full cursor-default bg-black/60 backdrop-blur-sm animate-fade-in-fast"
           />
-          <div className="fixed bottom-0 left-0 right-0 h-[85vh] overflow-y-auto rounded-t-xl bg-[#050505] p-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[#F5F5F5]">Admin Menu</h2>
-              <button
-                onClick={() => setIsMobileOpen(false)}
-                className="rounded-full p-2 hover:bg-[#252525] text-[#888]"
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Admin menu"
+            className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] flex-col border-r border-border bg-surface shadow-2xl animate-slide-in-left"
+          >
+            <div className="flex items-center justify-between gap-2 p-4">
+              <SidebarBrand />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={onCloseMobile}
+                className="size-9 shrink-0 rounded-full"
+                aria-label="Close menu"
               >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                <XIcon />
+              </Button>
             </div>
-            <nav className="space-y-2">
-              <div className="font-semibold text-sm mb-2 text-[#888]">Admin</div>
-              <div className="space-y-1">
-                <a href="/admin" className="block px-3 py-2 hover:bg-[#252525] rounded-md">Dashboard</a>
-              </div>
-              <div className="font-semibold text-sm mb-2 mt-4 text-[#888]">Content</div>
-              <div className="space-y-1">
-                <a href="/admin/projects" className="block px-3 py-2 hover:bg-[#252525] rounded-md">Projects</a>
-                <a href="/admin/certificates" className="block px-3 py-2 hover:bg-[#252525] rounded-md">Certificates</a>
-                <a href="/admin/skills" className="block px-3 py-2 hover:bg-[#252525] rounded-md">Skills</a>
-              </div>
-              <div className="font-semibold text-sm mb-2 mt-4 text-[#888]">General</div>
-              <div className="space-y-1">
-                <a href="/admin/profile" className="block px-3 py-2 hover:bg-[#252525] rounded-md">Profile</a>
-                <a href="/admin/settings" className="block px-3 py-2 hover:bg-[#252525] rounded-md">Settings</a>
-              </div>
-              <div className="border-t border-[#252525] mt-4 pt-4">
-                <LogoutButton />
-              </div>
-            </nav>
+            <div className="flex-1 overflow-y-auto px-3 pb-4">
+              <SidebarNav pathname={pathname} onNavigate={onCloseMobile} />
+            </div>
+            <div className="px-3 pb-4">
+              <SidebarFooter user={user} />
+            </div>
           </div>
         </div>
       )}
-
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 border-r border-background/20 p-4">
-        <nav className="space-y-2">
-          <div className="font-semibold text-lg mb-4">Admin</div>
-          <div className="space-y-1">
-            <a href="/admin" className="px-3 py-2 hover:bg-accent/50 rounded-md block">Dashboard</a>
-          </div>
-          <div className="mt-4 font-semibold">Content</div>
-          <div className="space-y-1 mt-1">
-            <a href="/admin/projects" className="px-3 py-2 hover:bg-accent/50 rounded-md block">Projects</a>
-            <a href="/admin/certificates" className="px-3 py-2 hover:bg-accent/50 rounded-md block">Certificates</a>
-            <a href="/admin/skills" className="px-3 py-2 hover:bg-accent/50 rounded-md block">Skills</a>
-          </div>
-          <div className="mt-4 font-semibold">General</div>
-          <div className="space-y-1 mt-1">
-            <a href="/admin/profile" className="px-3 py-2 hover:bg-accent/50 rounded-md block">Profile</a>
-            <a href="/admin/settings" className="px-3 py-2 hover:bg-accent/50 rounded-md block">Settings</a>
-          </div>
-          <div className="mt-4 pt-4 border-t border-background/20">
-            <LogoutButton />
-          </div>
-        </nav>
-      </aside>
     </>
   )
 }

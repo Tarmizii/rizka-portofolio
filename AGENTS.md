@@ -18,46 +18,49 @@ src/
       page.tsx              # Public homepage with hero, about, projects
       projects/[slug]/
         page.tsx            # Project detail page
-    certificates/           # Certificates page
+    certificates/           # Certificates page (+ loading.tsx)
+    resume/                 # Resume page (+ loading.tsx)
     admin/
+      layout.tsx            # Admin title template + noindex metadata
       login/                # Auth login page
-      page.tsx              # Admin dashboard
-      projects/             # Project CRUD
-      certificates/         # Certificate CRUD
-      skills/               # Skills management
-      profile/              # Profile settings
-      settings/             # General settings
+      (dashboard)/
+        layout.tsx          # AdminShell (sidebar/header) + loading.tsx
+        page.tsx            # Admin dashboard
+        projects/           # Project CRUD
+        certificates/       # Certificate CRUD
+        skills/             # Skills management
+        profile/            # Profile settings
+        settings/           # Account email & password
     layout.tsx              # Root layout with metadata & LenisProvider
-    globals.css             # Design tokens (dark theme)
+    error.tsx, not-found.tsx
+    robots.ts, sitemap.ts
+    globals.css             # Design tokens + Tailwind v4 theme bridge
   components/
     ui/                     # shadcn/ui components
-      button.tsx, card.tsx, input.tsx, label.tsx, dialog.tsx
+      button, card, input, label, dialog, confirm-dialog, sonner, spinner
     portfolio/              # Public portfolio components
-      Header, Hero, About, Capabilities, TechStack, Contact, Footer
-      PageTransition (Framer Motion), LenisProvider
+      PortfolioHeader, Hero, About, Capabilities, TechStack, Contact, Footer
+      PortfolioLoader, LenisProvider, ProjectGallery, FeaturedCertificates
     admin/                  # Admin dashboard components
-      AdminSidebar, AdminHeader, ProjectForm
+      AdminShell, AdminSidebar, AdminHeader, admin-nav, ProjectModal, FileUpload
   lib/
-    supabase/               # Supabase client/ssr/middleware
-      client.ts, server.ts, middleware.ts
-    data/                   # Data access layer
-      projects.ts
-    validations/            # Zod schemas
-      schemas.ts
+    supabase/
+      client.ts             # Browser client
+      server.ts             # Server client (cookies)
+      storage.ts            # Public URL → storage path, for file cleanup
     utils.ts                # Utility functions (cn, etc.)
-  middleware.ts             # Session refresh middleware
-  types/                    # TypeScript types
-    database.ts, projects.ts, profile.ts, certificates.ts, skills.ts
+  proxy.ts                  # Auth gate for /admin/* (Next 16 middleware)
+  types/
+    database.ts             # Row types for every table
 supabase/
   migrations/               # Database migrations
-    20260725000001_create_profiles_table.sql
-    20260725000002_create_projects_table.sql
-    20260725000003_create_project_images_table.sql
-    20260725000004_create_certificates_table.sql
-    20260725000005_create_skills_table.sql
-    20260725000006_create_storage_policies.sql
-    20260725000007_seed_profile.sql
 ```
+
+No `tailwind.config.ts`: Tailwind v4 is configured CSS-first in `globals.css`, and a
+config file is only read when a stylesheet imports it with `@config`. The
+`@theme inline` block in `globals.css` is what maps the design tokens to utility
+classes. For the same reason the `tailwindcss-animate` utilities
+(`animate-in`, `fade-in-0`, …) are not available.
 
 ## Dev Commands
 
@@ -90,23 +93,37 @@ npm run lint
 
 Tables created in migrations:
 - `profiles` - User profile information
-- `projects` - Portfolio projects with status, featured flag, soft delete
-- `project_images` - Project screenshots with ordering
+- `projects` - Portfolio projects with status and featured flag
+- `project_images` - Project screenshots
 - `certificates` - Certificates with PDF storage
 - `skills` - Skills with categories and visibility
 
-**Publishing workflow:** Draft → Review → Published (via `status` column)
+**Publishing workflow:** none — the CMS writes `status: 'published'` on save, so
+everything goes live immediately. The `status` and `deleted_at` columns still exist
+(and the public queries still filter on them), but nothing in the admin UI sets them.
 
-## Next Steps
+**Deleting:** delete is permanent. The admin removes the database row *and* the files
+it referenced in the `portfolio-assets` bucket (project cover + gallery, certificate
+cover + PDF). Public URLs are mapped back to storage paths by
+`src/lib/supabase/storage.ts`.
 
-1. Configure Supabase credentials in `.env.local`
-2. Apply database migrations (`supabase db push`)
-3. Build project detail page with real data
-4. Add public projects showcase section
+## Deploying
+
+1. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
+   `NEXT_PUBLIC_SITE_URL` in the host's environment (see `.env.example`).
+   `NEXT_PUBLIC_SITE_URL` is what `robots.ts` and `sitemap.ts` use — without it they
+   emit `http://localhost:3000`.
+2. Apply migrations with `supabase db push`.
+3. `npm run build` then `npm run start`.
 
 ## Notes
 
 - Use `npm` for dependency management
 - Design layout is source-controlled; content is editable via CMS
-- Admin routes require Supabase Auth
-- Build verified: ✓ 13 pages generated successfully
+- Admin routes require Supabase Auth and are `noindex` + disallowed in `robots.txt`
+- Build verified: ✓ 15 routes, `npm run build` exits 0
+- Lint is `@next/eslint-plugin-next` + `typescript-eslint` + `eslint-plugin-react-hooks`
+  composed directly in `eslint.config.mjs` — NOT `eslint-config-next`, whose bundled
+  plugins pin a vulnerable `minimatch@3` chain. Don't reintroduce the wrapper.
+- `package.json` `overrides` pin patched `postcss` and `sharp` for `next`; drop them
+  once `next` ships versions that satisfy `npm audit` on its own.

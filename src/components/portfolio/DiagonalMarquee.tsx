@@ -41,7 +41,7 @@ function MarqueeStrip({
       }`}
     >
       <div className={`flex shrink-0 ${animClass}`}>
-        {[...Array(3)].map((_, repeat) => (
+        {[...Array(4)].map((_, repeat) => (
           <div key={repeat} className="flex shrink-0 items-center">
             {items.map((item, i) => (
               <span key={`${repeat}-${i}`} className="flex items-center">
@@ -49,9 +49,7 @@ function MarqueeStrip({
                   {item}
                 </span>
                 <span
-                  className={`inline-block h-2 w-2 shrink-0 rounded-full ${
-                    isLight ? "bg-[var(--accent)]" : "bg-[var(--accent)]"
-                  }`}
+                  className="inline-block h-2 w-2 shrink-0 rounded-full bg-[var(--accent)]"
                 />
               </span>
             ))}
@@ -67,19 +65,30 @@ export default function DiagonalMarquee() {
     <div className="relative -mt-4 overflow-hidden">
       {/* Top strip - rotated right, light */}
       <div
-        className="relative -mx-20 origin-center"
-        style={{ transform: "rotate(-3deg)" }}
+        className="relative origin-center"
+        style={{
+          transform: "rotate(-3deg)",
+          marginLeft: "-10vw",
+          marginRight: "-10vw",
+          width: "120vw",
+        }}
       >
         <MarqueeStrip items={topItems} direction="left" variant="light" />
       </div>
 
       {/* Bottom strip - rotated left, dark */}
       <div
-        className="relative -mx-20 -mt-2 origin-center"
-        style={{ transform: "rotate(3deg)" }}
+        className="relative -mt-2 origin-center"
+        style={{
+          transform: "rotate(3deg)",
+          marginLeft: "-10vw",
+          marginRight: "-10vw",
+          width: "120vw",
+        }}
       >
         <MarqueeStrip items={bottomItems} direction="right" variant="dark" />
       </div>
     </div>
   )
 }
+

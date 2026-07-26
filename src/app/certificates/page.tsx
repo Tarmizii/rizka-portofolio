@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+
 import Image from "next/image"
 import { FileText } from "lucide-react"
 
@@ -10,9 +10,10 @@ export default async function CertificatesPage() {
   const { data: certificates, error } = await supabase
     .from("certificates")
     .select("*")
-    .eq("status", "published")
     .is("deleted_at", null)
-    .order("sort_order", { ascending: true })
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
 
   if (error) {
     console.error("Error fetching certificates:", error)
@@ -51,7 +52,9 @@ export default async function CertificatesPage() {
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                   <div className="absolute top-3 right-3">
-                    <Badge variant="secondary">{cert.year}</Badge>
+                    <span className="inline-flex items-center rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-xs font-bold text-white shadow-lg">
+                      {cert.year}
+                    </span>
                   </div>
                 </div>
                 <CardHeader className="pb-3">

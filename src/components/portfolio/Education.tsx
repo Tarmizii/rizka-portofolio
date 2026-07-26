@@ -39,7 +39,7 @@ export default function Education({ profile }: { profile?: Profile | null }) {
           {/* Year badge */}
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-4 py-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-            <span className="text-xs font-medium tracking-widest text-[var(--muted)]">
+            <span className="text-xs font-medium tracking-widest text-[var(--muted-foreground)]">
               {year}
             </span>
           </div>
@@ -55,7 +55,7 @@ export default function Education({ profile }: { profile?: Profile | null }) {
           </p>
 
           {/* Description */}
-          <p className="text-sm leading-relaxed text-[var(--muted)]">
+          <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
             Graduated with a focus on web development, database management, and
             software engineering. Applied technical knowledge through hands-on
             projects building full-stack web applications.

@@ -14,7 +14,7 @@ export default function PortfolioHeader({ profile }: { profile?: Profile | null 
       <header className="fixed top-0 left-0 right-0 z-50 w-full">
         <div className="flex h-16 items-center justify-between px-6 md:px-10">
           {/* Social links - left */}
-          <div className="flex items-center gap-2 text-xs font-medium tracking-wider text-[var(--muted)]">
+          <div className="flex items-center gap-2 text-xs font-medium tracking-wider text-[var(--muted-foreground)]">
             <a
               href={profile?.github_url || "https://github.com"}
               target="_blank"

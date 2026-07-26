@@ -43,7 +43,7 @@ export default function About({ profile }: { profile?: Profile | null }) {
 
           {/* Body */}
           <motion.p
-            className="text-base font-medium uppercase leading-relaxed tracking-wide text-[var(--muted)] md:text-lg md:leading-[1.8]"
+            className="text-base font-medium uppercase leading-relaxed tracking-wide text-[var(--muted-foreground)] md:text-lg md:leading-[1.8]"
             initial={{ opacity: 0, y: 40 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{

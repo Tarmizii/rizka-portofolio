@@ -79,7 +79,8 @@ async function SkillsSection() {
     .from("skills")
     .select("*")
     .eq("visible", true)
-    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
 
   if (!skills || skills.length === 0) return null
 

@@ -14,17 +14,19 @@ import Education from "@/components/portfolio/Education"
 import Contact from "@/components/portfolio/Contact"
 import Footer from "@/components/portfolio/Footer"
 import CustomCursor from "@/components/portfolio/CustomCursor"
+import FeaturedCertificates from "@/components/portfolio/FeaturedCertificates"
 import { LenisProvider } from "@/components/portfolio/LenisProvider"
 
-import { Project, Skill, Profile } from "@/types/database"
+import { Project, Skill, Profile, Certificate } from "@/types/database"
 
 interface PortfolioLayoutProps {
   profile?: Profile | null
   projects: Project[]
   skills: Skill[]
+  certificates?: Certificate[]
 }
 
-export default function PortfolioLayout({ profile, projects, skills }: PortfolioLayoutProps) {
+export default function PortfolioLayout({ profile, projects, skills, certificates }: PortfolioLayoutProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   const handleLoadComplete = useCallback(() => {
@@ -52,6 +54,7 @@ export default function PortfolioLayout({ profile, projects, skills }: Portfolio
             <SelectedProjects projects={projects} />
             <TechStack skills={skills} />
             <Education profile={profile} />
+            <FeaturedCertificates certificates={certificates} />
             <Contact profile={profile} />
           </main>
 

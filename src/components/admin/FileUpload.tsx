@@ -48,7 +48,7 @@ export function FileUpload({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       <Label>{label}</Label>
       <div
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
@@ -69,12 +69,12 @@ export function FileUpload({
           onChange={handleFileSelect}
         />
         {file ? (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <div className="text-sm text-accent flex items-center gap-2">
               <span className="text-lg">📄</span>
               {file.name}
             </div>
-            <Button type="button" variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleRemove() }} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <Button type="button" variant="destructive" size="sm" onClick={(e) => { e.stopPropagation(); handleRemove() }}>
               Remove file
             </Button>
           </div>

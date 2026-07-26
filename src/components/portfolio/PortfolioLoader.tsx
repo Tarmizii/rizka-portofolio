@@ -70,7 +70,7 @@ export default function PortfolioLoader({
                 />
               </div>
               <motion.span
-                className="text-xs font-medium tracking-widest text-[var(--muted)]"
+                className="text-xs font-medium tracking-widest text-[var(--muted-foreground)]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}

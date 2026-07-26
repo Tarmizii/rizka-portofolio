@@ -14,7 +14,6 @@ export type Project = {
   features: string[]
   featured: boolean
   status: "draft" | "published"
-  sort_order: number | null
   deleted_at: string | null
   created_at: string
   updated_at: string
@@ -25,7 +24,6 @@ export type ProjectImage = {
   project_id: string
   image_url: string
   caption: string | null
-  sort_order: number | null
   created_at: string
 }
 
@@ -55,7 +53,6 @@ export type Certificate = {
   pdf_url: string
   featured: boolean
   status: "draft" | "published"
-  sort_order: number | null
   deleted_at: string | null
   created_at: string
   updated_at: string
@@ -66,7 +63,6 @@ export type Skill = {
   name: string
   category: string
   visible: boolean
-  sort_order: number | null
   created_at: string
   updated_at: string
 }

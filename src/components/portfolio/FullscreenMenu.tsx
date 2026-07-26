@@ -124,7 +124,7 @@ export default function FullscreenMenu({ isOpen, onClose }: FullscreenMenuProps)
                     href={link.href}
                     target={link.external ? "_blank" : undefined}
                     rel={link.external ? "noopener noreferrer" : undefined}
-                    className="text-sm font-medium tracking-widest text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+                    className="text-sm font-medium tracking-widest text-[var(--muted-foreground)] transition-colors hover:text-[var(--accent)]"
                     onClick={onClose}
                   >
                     {link.label}

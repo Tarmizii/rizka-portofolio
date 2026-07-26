@@ -3,12 +3,12 @@ export default function Footer() {
     <footer className="border-t border-[var(--border)] py-8">
       <div className="flex flex-col items-center justify-between gap-4 px-6 sm:flex-row md:px-10">
         {/* Left - copyright */}
-        <p className="text-xs tracking-wider text-[var(--muted)]">
+        <p className="text-xs tracking-wider text-[var(--muted-foreground)]">
           © {new Date().getFullYear()} Rizka Aulia. All rights reserved.
         </p>
 
         {/* Right - social links */}
-        <div className="flex items-center gap-6 text-xs tracking-wider text-[var(--muted)]">
+        <div className="flex items-center gap-6 text-xs tracking-wider text-[var(--muted-foreground)]">
           <a
             href="https://github.com/rizkaauliaa"
             target="_blank"

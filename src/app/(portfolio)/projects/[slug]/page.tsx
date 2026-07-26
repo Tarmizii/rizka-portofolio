@@ -2,21 +2,60 @@ import { createClient } from "@/lib/supabase/server"
 import { LenisProvider } from "@/components/portfolio/LenisProvider"
 import PortfolioHeader from "@/components/portfolio/PortfolioHeader"
 import Footer from "@/components/portfolio/Footer"
+import ProjectGallery from "@/components/portfolio/ProjectGallery"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import type { Metadata } from "next"
 
-export default async function ProjectDetailPage({ params }: { params: { slug: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
   const supabase = await createClient()
-
   const { data: project } = await supabase
     .from("projects")
-    .select("*")
-    .eq("slug", params.slug)
+    .select("title, description")
+    .eq("slug", slug)
+    .is("deleted_at", null)
     .eq("status", "published")
     .single()
 
+  if (!project) return { title: "Project Not Found" }
+
+  return {
+    title: `${project.title} - Rizka Aulia`,
+    description: project.description ?? undefined,
+  }
+}
+
+export default async function ProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const supabase = await createClient()
+
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("slug", slug)
+    .is("deleted_at", null)
+    .eq("status", "published")
+    .maybeSingle()
+
+  if (projectError) throw projectError
   if (!project) notFound()
+
+  const { data: projectImages } = await supabase
+    .from("project_images")
+    .select("*")
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
 
   return (
     <LenisProvider>
@@ -102,6 +141,8 @@ export default async function ProjectDetailPage({ params }: { params: { slug: st
               </ul>
             </div>
           )}
+
+          <ProjectGallery images={projectImages || []} />
 
           {/* Links */}
           <div className="flex flex-wrap gap-4 pt-8 border-t border-[#252525]">

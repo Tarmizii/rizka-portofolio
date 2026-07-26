@@ -42,7 +42,7 @@ export default function Hero({ profile }: { profile?: Profile | null }) {
           </motion.h1>
 
           <motion.h1
-            className="text-[clamp(2rem,6vw,5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[var(--muted)]"
+            className="text-[clamp(2rem,6vw,5rem)] font-bold leading-[0.95] tracking-[-0.03em] text-[var(--muted-foreground)]"
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
